@@ -7,12 +7,15 @@
 Delta::Delta(const string& s, TM *tm){
     this->tm = tm;
 
+    tm->PrintTM();
+
     vector<string> substrs;
     const char *delim = " ";
     char *sptr;
     sptr = strtok(const_cast<char *>(s.c_str()), delim);
     while(sptr){
         string substr = string(sptr);
+        //cout<<substr<<endl;
         substrs.push_back(substr);//把空格分出的子串传入substrs
         sptr = strtok(NULL, delim);
     }
@@ -26,9 +29,7 @@ Delta::Delta(const string& s, TM *tm){
         PrintError("Delta: Old state error.");
     }
 
-    if(substrs[1].size() != tm->GetTapeNum() 
-        || substrs[2].size() != tm->GetTapeNum()
-            || substrs[3].size() != tm->GetTapeNum() ){
+    if(substrs[1].size() != substrs[2].size()){
         PrintError("Delta: symbol num error.");
     }
 
@@ -36,6 +37,7 @@ Delta::Delta(const string& s, TM *tm){
     for(int i = 0; i < substrs[1].size(); i++){
         if(!tm->SearchSymbol(substrs[1][i])){
             //TODO:错误，不存在这个符号
+            cout<<substrs[1][i];
             PrintError("Delta: Old symbol doesn't exist.");
         }
     }
@@ -52,7 +54,7 @@ Delta::Delta(const string& s, TM *tm){
 
     //4.方向
     for(int i = 0; i < substrs[3].size();i++){
-        if(substrs[3][i] !='l' && substrs[3][i] !='r'){
+        if(substrs[3][i] !='l' && substrs[3][i] !='r' && substrs[3][i] != '*'){
             PrintError("Delta: direction error.");
         }
     }
@@ -79,14 +81,13 @@ TM::TM(const string& tm_file){
         ParseString(s);
     }
 
-
-
     file.close();
 }
 
 void TM::ParseString(const string& s){
     if(s.size()<=3) return;
-    
+    //cout<<"111"<<endl;
+
     Delta *delta;
     if(s[0]!='#')//不是井号开头，说明是delta
         delta = new Delta(s, this);
@@ -96,18 +97,21 @@ void TM::ParseString(const string& s){
     int start = -1, len;
     for(int i=0;i<s.length();i++){
         if(s[i]== '{'){
-            start = i;
-            len = 0;
+            start = i+1;
+            len = -2;
         }
         len++;
         if(s[i]=='}')break;
     }
     if(start > 0)substr = s.substr(start, len);
     
+    const char *delim;
+    char *sptr;
+    int num;
+    string strofnum;
     switch(s[1]){
     case 'Q':
-        const char *delim = ",";
-        char *sptr;
+        delim = ",";
         sptr = strtok(const_cast<char *>(substr.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -116,8 +120,7 @@ void TM::ParseString(const string& s){
         }
         break;
     case 'S':
-        const char *delim = ",";
-        char *sptr;
+        delim = ",";
         sptr = strtok(const_cast<char *>(substr.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -126,8 +129,7 @@ void TM::ParseString(const string& s){
         }
         break;
     case 'G':
-        const char *delim = ",";
-        char *sptr;
+        delim = ",";
         sptr = strtok(const_cast<char *>(substr.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -136,8 +138,7 @@ void TM::ParseString(const string& s){
         }
         break;
     case 'q':
-        const char *delim = " ";
-        char *sptr;
+        delim = " ";
         sptr = strtok(const_cast<char *>(s.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -147,8 +148,7 @@ void TM::ParseString(const string& s){
         init_state = substrs[substrs.size()-1];
         break;
     case 'B':
-        const char *delim = " ";
-        char *sptr;
+        delim = " ";
         sptr = strtok(const_cast<char *>(s.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -158,8 +158,7 @@ void TM::ParseString(const string& s){
         blank_symbol = substrs[substrs.size()-1][0];
         break;
     case 'F':
-        const char *delim = ",";
-        char *sptr;
+        delim = ",";
         sptr = strtok(const_cast<char *>(substr.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
@@ -168,18 +167,17 @@ void TM::ParseString(const string& s){
         }
         break;
     case 'N':
-        const char *delim = " ";
-        char *sptr;
+        delim = " ";
         sptr = strtok(const_cast<char *>(s.c_str()), delim);
         while(sptr){
             string ss = string(sptr);
             substrs.push_back(ss);//把空格分出的子串传入substrs
             sptr = strtok(NULL, delim);
         }
-        int num = 0;
-        string strofnum = substrs[substrs.size()-1];
+        num = 0;
+        strofnum = substrs[substrs.size()-1];
         for(int i = 0; i < strofnum.size(); i++){
-            num = num * 10 + strofnum[i];
+            num = num * 10 + (strofnum[i] - '0');
         }
         num_of_tape = num;
         break;
@@ -190,8 +188,39 @@ void TM::ParseString(const string& s){
 }
 
 
+void TM::RunTM(string input){
+    CheckInput(input);
+
+    
+
+}
+
+void TM::PrintTM(){
+    cout<<"Q:"<<endl;
+    for(State *st : state_set){
+        cout<<st->GetName()<<" ";
+    }
+    cout<<endl;
+
+    cout<<"Input Symbol Set: "<<input_symbol_set<<endl;
+    cout<<"Tape Symbol Set: "<<tape_symbol_set<<endl;
+    cout<<"Init State: "<<init_state<<endl;
+    cout<<"Blank State: "<<blank_symbol<<endl;
+    cout<<"Num of Tapes: "<<num_of_tape<<endl;
+
+    cout<<"Delta:"<<endl;
+    for(Delta *d : deltas){
+        cout<<(*d)<<endl;
+    }
+
+}
+
+
 void PrintError(string s){
+
+    cerr<<"==================== ERR ===================="<<endl;
     cerr<<s<<endl;
+    cerr<<"==================== END ===================="<<endl;
     exit(-1);
 }
 

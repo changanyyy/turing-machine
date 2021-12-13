@@ -5,12 +5,10 @@ using namespace std;
  
 int main()
 {
+    TM *tm = new TM("palindrome_detector_2tapes.tm");
+    tm->PrintTM();
     string s;
-    getline(cin, s);
-    //Delta *d = new Delta(s);
-    for(char c: s){
-        cout<<c<<endl;
-    }
-    
+    cin>>s;
+    tm->RunTM(s);
     return 0;
 }
