@@ -1,13 +1,13 @@
 - [1. 背景](https://ptc-nju.github.io/#1-背景)
 - [2. 实验描述](https://ptc-nju.github.io/#2-实验描述)
-- \3. 任务介绍
+- 3. 任务介绍
   - [一：解析器](https://ptc-nju.github.io/#一解析器)
   - 二：模拟器
     - [普通模式](https://ptc-nju.github.io/#普通模式)
     - [`verbose` 模式](https://ptc-nju.github.io/#verbose-模式)
   - [三：多带图灵机程序](https://ptc-nju.github.io/#三多带图灵机程序)
 - [4. 验收测试](https://ptc-nju.github.io/#4-验收测试)
-- \5. 实验提交
+- 5. 实验提交
   - [提交格式](https://ptc-nju.github.io/#提交格式)
   - [提交方法](https://ptc-nju.github.io/#提交方法)
   - [截止日期](https://ptc-nju.github.io/#截止日期)
