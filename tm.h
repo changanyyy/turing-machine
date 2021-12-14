@@ -30,7 +30,12 @@ private:
     string dir;   //读头移动方向
 public:
     Delta(const string& s, TM *tm);
-
+    bool Match(string s_name, string syms){
+        return s_name==old_state->GetName() && old_symbols == syms;
+    }
+    string GetNewState(){return new_state->GetName();}
+    string GetNewSymbols(){return new_symbols;}
+    string GetDirect(){return dir;}
     friend ostream& operator<<(ostream& out,const Delta& d){
         out<<d.old_state->GetName()<<" ";
         out<<d.new_state->GetName()<<" ";
@@ -91,6 +96,8 @@ private:
     int num_of_tape;
 
     vector<Tape *> tapes;
+
+    string cur_state;
 public:
     TM(const string& tm_file);
     int GetTapeNum() const{ return num_of_tape;}
@@ -141,6 +148,23 @@ public:
     }
 }
     void RunTM(string input);
+
+    string GetCurSymbols(){
+        string s;
+        for(Tape *tp : tapes){
+            s+=tp->GetCurSym();
+        }
+        return s;
+    }
+
+    Delta *GetDelta(string state_name, string syms){
+        for(Delta *dt : deltas){
+            if(dt->Match(state_name, syms)){
+                return dt;
+            }
+        }
+        return nullptr;
+    }
 
     void InitTapes(string input);
 
