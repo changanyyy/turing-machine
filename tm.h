@@ -1,6 +1,9 @@
-#pragma once
+#ifndef _TM_H_
+#define _TM_H_
+
 #include<string>
 #include<vector>
+#include<queue>
 #include<iostream>
 using namespace std;
 
@@ -10,7 +13,7 @@ class State;
 class TM;
 
 
-void PrintError(string s);
+void PrintError(string s,bool verbose);
 
 
 //转换函数
@@ -87,36 +90,53 @@ public:
         cout<<endl;
     }
     void PrintID(int idx){
-        int start = -1000;
+        int start = -1000, p;//左端第一个
+        queue<int> blank;
+
         cout<<"Index"<<idx<<" : ";
-        int p;
         for(p=tapeneg.size()-1;p>=0;p--){
             if(start==-1000 && tapeneg[p]!='_')start = -p-1;
-            if(tapeneg[p]!='_')cout<<p<< " ";
+            if(tapeneg[p]!='_' || (-p-1 == ptr)){
+                cout<<p+1<< " ";
+                if(p+1 >=100)blank.push(3); else if(p+1>=10)blank.push(2); else blank.push(1);
+            }
         }
-
         for(p = 0;p<tapepos.size();p++){
             if(start==-1000 && tapepos[p]!='_')start = p;
-            if(tapepos[p]!='_')cout<<p<< " ";
+            if(tapepos[p]!='_' || p == ptr){
+                cout<<p<< " ";
+                if(p>=100)blank.push(3); else if(p>=10)blank.push(2); else blank.push(1);
+            }
         }
-        if(start==-1000)cout<<abs(ptr);
+
+        //if(start==-1000)cout<<abs(ptr);
         cout<<endl;
 
+        int allnum=0;
+        int n;
         cout<<"Tape"<<idx<<"  : ";
         for(p=tapeneg.size()-1;p>=0;p--){
-            if(start==-1000 && tapeneg[p]!='_')start = -p-1;
-            if(tapeneg[p]!='_')cout<<tapeneg[p]<< " ";
+            if(tapeneg[p]!='_' || -p-1==ptr){
+                cout<<tapeneg[p];
+                n = blank.front(); blank.pop();
+                if(-p-1<ptr)allnum+=(n+1);
+                for(int i=0;i<n;i++)cout<<" ";
+            }
         }
         for(p = 0;p<tapepos.size();p++){
-            if(start==-1 && tapepos[p]!='_')start = p;
-            if(tapepos[p]!='_')cout<<tapepos[p]<< " ";
+            if(tapepos[p]!='_' || p == ptr){
+                cout<<tapepos[p];
+                n = blank.front(); blank.pop();
+                if(p<ptr)allnum+=(n+1);
+                for(int i=0;i<n;i++)cout<<" ";
+            }
         }
-        if(start == -1000)cout<<"_";
+        //if(start == -1000)cout<<"_";
         cout<<endl;
         
         //输出head
         cout<<"Head"<<idx<<"  : ";
-        if(start!=-1000)for(int i=0;i<ptr-start;i++)cout<<" ";
+        if(start!=-1000)for(int i=0;i<allnum;i++)cout<<" ";
         cout<<"^";
         cout<<endl;
     }
@@ -157,8 +177,11 @@ private:
     vector<Tape *> tapes;               //纸带
     int step = 0;                       //第几步
     string cur_state;                   //当前状态
+
+    bool verbose_mode;
 public:
     TM(const string& tm_file);
+    void SetVerbose(){verbose_mode = true;}
     int GetTapeNum() const { return num_of_tapes; }
     //处理输入的每一行
     void ParseString(const string& s);
@@ -189,12 +212,17 @@ public:
     void AddDelta(Delta *delta){ deltas.push_back(delta); }
 
     void CheckInput(string input){
+
         for(int i=0;i<input.size();i++){
             if(!this->SearchInputSymbol(input[i])){
-                string s= string("error: \'") + input[i] + "\' was not declared in the set of input symbols\nInput: "+input+"\n"+"       ";
-                for(int j=0;j<i;j++)s+=' ';
-                s+='^';
-                PrintError(s);
+                if(verbose_mode){
+                    string s= string("error: \'") + input[i] + "\' was not declared in the set of input symbols\nInput: "+input+"\n"+"       ";
+                    for(int j=0;j<i;j++)s+=' ';
+                    s+='^';
+                    PrintError(s,true);
+                }else{
+                    PrintError("illegal input",false);
+                }
             }
         }
     }
@@ -226,15 +254,22 @@ public:
     }
     void PrintTM();
     void PrintResult(){
+        if(verbose_mode)cout<<"Result: ";
         tapes[0]->Print();
+        if(verbose_mode)cout<<"==================== END ===================="<<endl;
     }
     void PrintCur(){
-        cout<<"Step : "<<step<<endl;
+        if(!verbose_mode)return;
+        cout<<"Step   : "<<step<<endl;
         for(int i=0;i<num_of_tapes;i++){
             tapes[i]->PrintID(i);
         }
+        cout<<"State  : "<<cur_state<<endl;
         cout<<"---------------------------------------------"<<endl;
     }
 
 };
 
+
+
+#endif

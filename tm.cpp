@@ -21,14 +21,14 @@ Delta::Delta(const string& s, TM *tm){
     //开始解析
     //1.首先解析状态
     old_state = tm->SearchState(substrs[0]);
-    if(old_state == string()){PrintError("Delta: Old state error.");}//错误，不存在这个状态
+    if(old_state == string()){PrintError("syntax error",false);}//错误，不存在这个状态
 
-    if(substrs[1].size() != substrs[2].size()){PrintError("Delta: symbol num error.");}
+    if(substrs[1].size() != substrs[2].size()){PrintError("syntax error",false);}
 
     //2.对旧的符号进行解析
     for(int i = 0; i < substrs[1].size(); i++){
         if(!tm->SearchSymbol(substrs[1][i]))//:错误，不存在这个符号
-            PrintError("Delta: Old symbol doesn't exist.");
+            PrintError("syntax error",false);
     }
     old_symbols = substrs[1];
     
@@ -36,7 +36,7 @@ Delta::Delta(const string& s, TM *tm){
     for(int i = 0; i < substrs[2].size(); i++){
         if(!tm->SearchSymbol(substrs[2][i])){
             //TODO:错误，不存在这个符号
-            PrintError("Delta: New symbol doesn't exist.");
+            PrintError("syntax error",false);
         }
     }
     new_symbols = substrs[2];
@@ -44,19 +44,20 @@ Delta::Delta(const string& s, TM *tm){
     //4.方向
     for(int i = 0; i < substrs[3].size();i++){
         if(substrs[3][i] !='l' && substrs[3][i] !='r' && substrs[3][i] != '*'){
-            PrintError("Delta: direction error.");
+            PrintError("syntax error",false);
         }
     }
     dir = substrs[3];
     
     //5.下一个状态
     new_state = tm->SearchState(substrs[4]);
-    if(new_state == string()) PrintError("Delta: New state error.");//错误，不存在这个状态
+    if(new_state == string()) PrintError("syntax error",false);//错误，不存在这个状态
     tm->AddDelta(this);
 }
 
 
 TM::TM(const string& tm_file){
+    verbose_mode = false;
     ifstream file(tm_file.c_str());
     string s;
     while(getline(file, s)){
@@ -172,8 +173,9 @@ void TM::ParseString(const string& s){
 
 
 void TM::RunTM(string input){
+    if(verbose_mode)cout<<"Input: "<<input<<endl;
     CheckInput(input);
-
+    if(verbose_mode)cout<<"==================== RUN ===================="<<endl;
     InitTapes(input);
 
     while(1){
@@ -198,10 +200,7 @@ void TM::RunTM(string input){
 
         
     }
-    for(string final_state : final_states){
-        return;
-    }
-    cout<<"false"<<endl;
+
 }
 
 //初始化N条纸带，然后把第一条放上input，后面初始化为空白，依次push进tapes中。
@@ -238,11 +237,11 @@ void TM::PrintTM(){
 }
 
 
-void PrintError(string s){
+void PrintError(string s,bool verbose){
 
-    cerr<<"==================== ERR ===================="<<endl;
+    if(verbose)cerr<<"==================== ERR ===================="<<endl;
     cerr<<s<<endl;
-    cerr<<"==================== END ===================="<<endl;
+    if(verbose)cerr<<"==================== END ===================="<<endl;
     exit(-1);
 }
 

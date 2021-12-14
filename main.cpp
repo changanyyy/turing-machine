@@ -8,10 +8,6 @@ bool verbose_mode = false;
  
 int main(int argc,char *argv[])
 {
-    verbose_mode = false;
-    if(argc<3){
-        PrintError("Too Few arguments");
-    }
     string s;
     string file_name, input;
     for(int i=0;i<argc;i++){
@@ -30,11 +26,10 @@ int main(int argc,char *argv[])
         else input = string(argv[i]);
         idx++;
     }
-    //cout<<file_name<<endl;
-    //cout<<input<<endl;
-
+    if(file_name == string() || input == string())
+        PrintError("Too few arguments",false);
     TM *tm = new TM(file_name);
-    //tm->PrintTM();
+    if(verbose_mode)tm->SetVerbose();
     tm->RunTM(input);
     tm->PrintResult();
     return 0;
