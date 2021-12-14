@@ -8,6 +8,8 @@ class Delta;
 class State;
 class TM;
 
+void PrintError(string s);
+
 class State{
 private:
     string name;
@@ -31,7 +33,12 @@ private:
 public:
     Delta(const string& s, TM *tm);
     bool Match(string s_name, string syms){
-        return s_name==old_state->GetName() && old_symbols == syms;
+        if(s_name!=old_state->GetName())return false; 
+        for(int i=0;i<old_symbols.size();i++){
+            if(old_symbols[i]=='*')continue;
+            if(old_symbols[i]!= syms[i])return false;
+        }
+        return true;
     }
     string GetNewState(){return new_state->GetName();}
     string GetNewSymbols(){return new_symbols;}
@@ -59,6 +66,7 @@ public:
         MoveForward(direct);
     }
     void SetNewSym(char newsym){
+        if(newsym == '*')return;
         if(ptr>=0){
             tapepos[ptr] = newsym;
         }
@@ -67,13 +75,19 @@ public:
         }
     }
     void MoveForward(char direct){
-        ptr--;
+        if(direct=='l'){
+            ptr--;
+        }else if(direct =='r'){
+            ptr++;
+        }else return;
+
         if(ptr>=0){
             if(tapepos.size()<ptr+1)tapepos +='_';
         }
         else{
-            if(tapepos.size()<-ptr)tapeneg +='_';
+            if(tapeneg.size()<-ptr)tapeneg +='_';
         }
+
     }
     char GetCurSym()const{
         if(ptr>=0)
@@ -97,6 +111,7 @@ private:
 
     vector<Tape *> tapes;
 
+    int step = 0;
     string cur_state;
 public:
     TM(const string& tm_file);
@@ -137,22 +152,23 @@ public:
     void AddFinalState(const string& name){this->final_states.push_back(name);}
     void AddDelta(Delta *delta){ deltas.push_back(delta);}
 
-    bool CheckInput(string input){
-    for(int i=0;i<input.size();i++){
-        if(!this->SearchInputSymbol(input[i])){
-            string s= string("error: \'") + input[i] + "\' was not declared in the set of input symbols\nInput: "+input+"\n"+"       ";
-            for(int j=0;j<i;j++)s+=' ';
-            s+='^';
-            PrintError(s);
+    void CheckInput(string input){
+        for(int i=0;i<input.size();i++){
+            if(!this->SearchInputSymbol(input[i])){
+                string s= string("error: \'") + input[i] + "\' was not declared in the set of input symbols\nInput: "+input+"\n"+"       ";
+                for(int j=0;j<i;j++)s+=' ';
+                s+='^';
+                PrintError(s);
+            }
         }
     }
-}
     void RunTM(string input);
 
     string GetCurSymbols(){
         string s;
+        char c;
         for(Tape *tp : tapes){
-            s+=tp->GetCurSym();
+            s += tp->GetCurSym();
         }
         return s;
     }
@@ -171,4 +187,3 @@ public:
     void PrintTM();
 };
 
-void PrintError(string s);

@@ -82,6 +82,7 @@ TM::TM(const string& tm_file){
     }
 
     file.close();
+    step = 0;
 }
 
 void TM::ParseString(const string& s){
@@ -192,15 +193,28 @@ void TM::RunTM(string input){
     CheckInput(input);
 
     InitTapes(input);
-    string syms = GetCurSymbols();
-    Delta *dt = GetDelta(cur_state, syms);
-    cur_state = dt->GetNewState();
-    string newsyms = dt->GetNewSymbols();
-    string direct = dt->GetDirect();
-    for(int i=0;i<num_of_tape;i++){
-        tapes[i]->Move(newsyms[i], direct[i]);
+
+    while(1){
+        cout<<"\nStep: "<<step<<endl;
+        step++;
+        string syms = GetCurSymbols();
+        cout<<syms<<endl;
+        Delta *dt = GetDelta(cur_state, syms);
+        if(!dt) break;
+        cout<<"CurState: "<<cur_state<<endl;
+        cur_state = dt->GetNewState();
+        
+        string newsyms = dt->GetNewSymbols();
+        cout<<"NewSyms: "<<newsyms<<endl;
+        syms = GetCurSymbols();
+        cout<<"CurSyms after modified: "<<syms<<endl;
+        cout<<"CurState after modified: "<<cur_state<<endl;
+        string direct = dt->GetDirect();
+        for(int i=0;i<num_of_tape;i++){//对于每一条磁带
+           tapes[i]->Move(newsyms[i], direct[i]);
+        }
     }
-    
+    cout<<"End: "<<cur_state<<endl;
 }
 
 //初始化N条纸带，然后把第一条放上input，后面初始化为空白，依次push进tapes中。
