@@ -2,7 +2,7 @@
 #include<string.h>
 #include<iostream>
 #include<fstream>
-
+#include<unistd.h>
 
 Delta::Delta(const string& s, TM *tm){
     this->tm = tm;
@@ -179,6 +179,7 @@ void TM::RunTM(string input){
     InitTapes(input);
 
     while(1){
+        //usleep(1000000);
         PrintCur();
         step++;
         string syms = GetCurSymbols();
