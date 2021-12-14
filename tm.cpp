@@ -191,9 +191,22 @@ void TM::ParseString(const string& s){
 void TM::RunTM(string input){
     CheckInput(input);
 
+    InitTapes(input);
     
 
 }
+
+//初始化N条纸带，然后把第一条放上input，后面初始化为空白，依次push进tapes中。
+void TM::InitTapes(string input){
+    Tape *first_tape = new Tape(input);
+    tapes.push_back(first_tape);
+    for(int i=0;i<num_of_tape-1;i++){
+        Tape *tape = new Tape();
+        tapes.push_back(tape);
+    }
+
+}
+
 
 void TM::PrintTM(){
     cout<<"Q:"<<endl;

@@ -41,6 +41,43 @@ public:
     }
 };
 
+class Tape{
+private:
+    string tapepos;
+    string tapeneg;
+public:
+    int ptr;
+    Tape(){ptr = 0;tapepos +='_';}
+    Tape(const string& s){ptr = 0; tapepos = s;}
+    void Move(char newsym, char direct){
+        SetNewSym(newsym);
+        MoveForward(direct);
+    }
+    void SetNewSym(char newsym){
+        if(ptr>=0){
+            tapepos[ptr] = newsym;
+        }
+        else{
+            tapeneg[-ptr-1] = newsym;
+        }
+    }
+    void MoveForward(char direct){
+        ptr--;
+        if(ptr>=0){
+            if(tapepos.size()<ptr+1)tapepos +='_';
+        }
+        else{
+            if(tapepos.size()<-ptr)tapeneg +='_';
+        }
+    }
+    char GetCurSym()const{
+        if(ptr>=0)
+            return tapepos[ptr];
+        else
+            return tapeneg[-ptr-1];
+    }
+};
+
 
 class TM{
 private:
@@ -51,8 +88,9 @@ private:
     string init_state;                  //初始状态
     char blank_symbol;                  //空白符号
     vector<string> final_states;                //接受状态
-
     int num_of_tape;
+
+    vector<Tape *> tapes;
 public:
     TM(const string& tm_file);
     int GetTapeNum() const{ return num_of_tape;}
@@ -103,6 +141,8 @@ public:
     }
 }
     void RunTM(string input);
+
+    void InitTapes(string input);
 
     void PrintTM();
 };
